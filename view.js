@@ -1,6 +1,6 @@
 /* same config as script.js — keep in sync */
-const AIRTABLE_TOKEN = "YOUR_AIRTABLE_PAT_HERE";
-const AIRTABLE_BASE  = "YOUR_BASE_ID_HERE";
+const AIRTABLE_TOKEN = "patdDjF8LQNiHPbIv.ea6b727c91d93fd979616f6a36918f928b1ff1ae8b6d635639e16e0358aa4d56";   // Personal Access Token
+const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";  
 const TABLE_NAME     = "QRCodes";
 
 (async function () {
