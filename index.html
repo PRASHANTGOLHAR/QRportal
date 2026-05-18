@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QR Portal</title>
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <h1>QR Portal</h1>
+  <p>Create QR codes for your PDF & PPT files</p>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2>Create a new QR</h2>
+    <form id="create-form">
+      <label>Title
+        <input type="text" id="title" required placeholder="e.g. Product Brochure" />
+      </label>
+      <label>PDF file (optional)
+        <input type="file" id="pdf" accept="application/pdf" />
+      </label>
+      <label>PPT file (optional)
+        <input type="file" id="ppt" accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+      </label>
+      <button type="submit" id="submit-btn">Create QR</button>
+      <p class="hint">Attach at least one file. Max 5 MB per file.</p>
+      <p id="form-status" class="status"></p>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Existing QR codes</h2>
+    <button id="refresh-btn" class="ghost">Refresh</button>
+    <div id="list" class="list"></div>
+  </section>
+</main>
+
+<!-- QR preview modal -->
+<div id="qr-modal" class="modal hidden">
+  <div class="modal-body">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <h3 id="qr-title"></h3>
+    <div id="qr-canvas"></div>
+    <p class="qr-url"><a id="qr-link" target="_blank"></a></p>
+    <button onclick="downloadQR()">Download QR (PNG)</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
