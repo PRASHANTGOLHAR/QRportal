@@ -2,10 +2,34 @@
 const AIRTABLE_TOKEN = "patdDjF8LQNiHPbIv.ea6b727c91d93fd979616f6a36918f928b1ff1ae8b6d635639e16e0358aa4d56";   // Personal Access Token
 const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";        // e.g. appXXXXXXXXXXXXXX
 const TABLE_NAME     = "QRCodes";
+
+/* Public URL where you host these files. MUST be http(s) and reachable
+   from a phone (e.g. https://yourname.github.io/qr-portal/).
+   Leave "" to auto-detect from the current page — but auto-detect only
+   works if you opened this page over http(s), NOT file://. */
+const BASE_URL = "";
 /* ==================================== */
 
 const API = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(TABLE_NAME)}`;
 const HEADERS = { Authorization: `Bearer ${AIRTABLE_TOKEN}` };
+
+/* ---- environment check ---- */
+(function envCheck() {
+  const banner = document.getElementById("env-warning");
+  if (!banner) return;
+  if (location.protocol === "file:" && !BASE_URL) {
+    banner.textContent =
+      "⚠️ You opened this file directly (file://). QR codes generated here will NOT open on phones. " +
+      "Host these files on a web server (GitHub Pages, Netlify, etc.) or set BASE_URL in script.js.";
+    banner.classList.remove("hidden");
+  }
+})();
+
+function getViewBase() {
+  if (BASE_URL) return BASE_URL.replace(/\/+$/, "") + "/";
+  // auto-detect: strip index.html if present
+  return location.href.replace(/index\.html?(\?.*)?$/, "").replace(/\?.*$/, "");
+}
 
 /* ---- helpers ---- */
 function fileToBase64(file) {
@@ -43,22 +67,16 @@ document.getElementById("create-form").addEventListener("submit", async (e) => {
   const ppt = document.getElementById("ppt").files[0];
 
   if (!pdf && !ppt) {
-    status.textContent = "Attach at least one file.";
-    status.className = "status err";
-    return;
+    status.textContent = "Attach at least one file."; status.className = "status err"; return;
   }
   if ((pdf && pdf.size > 5 * 1024 * 1024) || (ppt && ppt.size > 5 * 1024 * 1024)) {
-    status.textContent = "Each file must be 5 MB or less.";
-    status.className = "status err";
-    return;
+    status.textContent = "Each file must be 5 MB or less."; status.className = "status err"; return;
   }
 
   btn.disabled = true;
-  status.textContent = "Creating record…";
-  status.className = "status";
+  status.textContent = "Creating record…"; status.className = "status";
 
   try {
-    // 1. create record with just the name
     const createRes = await fetch(API, {
       method: "POST",
       headers: { ...HEADERS, "Content-Type": "application/json" },
@@ -67,18 +85,15 @@ document.getElementById("create-form").addEventListener("submit", async (e) => {
     if (!createRes.ok) throw new Error(await createRes.text());
     const record = await createRes.json();
 
-    // 2. upload attachments
     if (pdf) { status.textContent = "Uploading PDF…"; await uploadAttachment(record.id, "PDF", pdf); }
     if (ppt) { status.textContent = "Uploading PPT…"; await uploadAttachment(record.id, "PPT", ppt); }
 
-    status.textContent = "Created!";
-    status.className = "status ok";
+    status.textContent = "Created!"; status.className = "status ok";
     e.target.reset();
     loadList();
   } catch (err) {
     console.error(err);
-    status.textContent = "Error: " + err.message;
-    status.className = "status err";
+    status.textContent = "Error: " + err.message; status.className = "status err";
   } finally {
     btn.disabled = false;
   }
@@ -101,16 +116,23 @@ async function loadList() {
       if (f.PPT?.length) has.push("PPT");
       const div = document.createElement("div");
       div.className = "list-item";
+      const safeTitle = (f.Name || "").replace(/"/g, "&quot;");
       div.innerHTML = `
         <div>
           <strong>${f.Name || "(untitled)"}</strong>
           <div class="badges">${has.map(t => `<span>${t}</span>`).join("")}</div>
           <div class="meta">${f.CreatedAt ? new Date(f.CreatedAt).toLocaleString() : ""}</div>
         </div>
-        <button onclick="showQR('${rec.id}', ${JSON.stringify(f.Name || "").replace(/"/g,'&quot;')})">View QR</button>
+        <div class="item-actions">
+          <button data-id="${rec.id}" data-title="${safeTitle}" class="view-qr-btn">View QR</button>
+          <button data-id="${rec.id}" data-title="${safeTitle}" class="delete-btn" onclick="deleteQR('${rec.id}', '${safeTitle}')">Delete</button>
+        </div>
       `;
       list.appendChild(div);
     });
+    list.querySelectorAll(".view-qr-btn").forEach(b =>
+      b.addEventListener("click", () => showQR(b.dataset.id, b.dataset.title))
+    );
   } catch (err) {
     list.innerHTML = `<p class="status err">${err.message}</p>`;
   }
@@ -118,16 +140,23 @@ async function loadList() {
 document.getElementById("refresh-btn").addEventListener("click", loadList);
 
 /* ---- QR modal ---- */
-let currentQR;
 function showQR(id, title) {
-  const url = `${location.origin}${location.pathname.replace(/index\.html?$/, "")}view.html?id=${id}`;
+  const url = `${getViewBase()}view.html?id=${id}`;
   document.getElementById("qr-title").textContent = title || "QR Code";
   const link = document.getElementById("qr-link");
   link.textContent = url; link.href = url;
   const canvas = document.getElementById("qr-canvas");
   canvas.innerHTML = "";
-  currentQR = new QRCode(canvas, { text: url, width: 220, height: 220 });
+  // eslint-disable-next-line no-new, no-undef
+  new QRCode(canvas, { text: url, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
   document.getElementById("qr-modal").classList.remove("hidden");
+
+  if (url.startsWith("file:")) {
+    const warn = document.createElement("p");
+    warn.className = "status err";
+    warn.textContent = "This QR points to a file:// URL — phones cannot open it. Host the site or set BASE_URL.";
+    canvas.appendChild(warn);
+  }
 }
 function closeModal() { document.getElementById("qr-modal").classList.add("hidden"); }
 function downloadQR() {
@@ -137,5 +166,19 @@ function downloadQR() {
   const a = document.createElement("a");
   a.href = src; a.download = "qr.png"; a.click();
 }
+window.closeModal = closeModal;
+window.downloadQR = downloadQR;
+
+async function deleteQR(id, title) {
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  try {
+    const res = await fetch(`${API}/${id}`, { method: "DELETE", headers: HEADERS });
+    if (!res.ok) throw new Error(await res.text());
+    loadList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+}
+window.deleteQR = deleteQR;
 
 loadList();

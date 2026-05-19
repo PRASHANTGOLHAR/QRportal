@@ -1,18 +1,27 @@
 * { box-sizing: border-box; }
+html, body { min-height: 100%; }
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #f4f6fb;
   color: #1f2937;
+  background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+  min-height: 100vh;
 }
 .topbar {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, rgba(79,70,229,0.85), rgba(124,58,237,0.85));
+  backdrop-filter: blur(6px);
   color: #fff;
   padding: 28px 20px;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
-.topbar h1 { margin: 0; font-size: 28px; }
-.topbar p { margin: 6px 0 0; opacity: 0.9; }
+.topbar h1 { margin: 0; font-size: 28px; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.topbar p { margin: 6px 0 0; opacity: 0.95; }
+
+.card {
+  background: rgba(255,255,255,0.95) !important;
+  backdrop-filter: blur(8px);
+}
 
 .container {
   max-width: 900px;
@@ -73,6 +82,7 @@ button.ghost {
   flex-wrap: wrap;
 }
 .list-item .meta { font-size: 12px; color: #6b7280; }
+.item-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .badges span {
   display: inline-block;
   background: #eef2ff;
@@ -83,6 +93,11 @@ button.ghost {
   margin-right: 4px;
   font-weight: 600;
 }
+.delete-btn {
+  background: #dc2626;
+  color: #fff;
+}
+.delete-btn:hover { background: #b91c1c; }
 
 .modal {
   position: fixed;
@@ -128,3 +143,13 @@ button.ghost {
 }
 .file-buttons a.pdf { background: #dc2626; }
 .file-buttons a.ppt { background: #ea580c; }
+
+/* added for fix */
+.hidden { display: none !important; }
+.file-row { display: flex; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+.file-row a { padding: 10px 16px; border-radius: 8px; text-decoration: none; color: #fff; font-weight: 600; }
+.file-row a.pdf { background: #d9534f; }
+.file-row a.ppt { background: #d97706; }
+.file-row a.dl  { background: #374151; }
+.preview { width: 100%; height: 70vh; border: 1px solid #ddd; border-radius: 8px; margin-top: 16px; }
+.muted { color: #6b7280; font-size: 14px; }
