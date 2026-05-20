@@ -69,8 +69,8 @@ document.getElementById("create-form").addEventListener("submit", async (e) => {
   if (!pdf && !ppt) {
     status.textContent = "Attach at least one file."; status.className = "status err"; return;
   }
-  if ((pdf && pdf.size > 5 * 1024 * 1024) || (ppt && ppt.size > 5 * 1024 * 1024)) {
-    status.textContent = "Each file must be 5 MB or less."; status.className = "status err"; return;
+  if ((pdf && pdf.size > 2 * 1024 * 1024 * 1024) || (ppt && ppt.size > 2 * 1024 * 1024 * 1024)) {
+    status.textContent = "Each file must be 2 GB or less."; status.className = "status err"; return;
   }
 
   btn.disabled = true;
