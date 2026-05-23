@@ -1,6 +1,6 @@
 /* same config as script.js — keep token + base in sync */
 const AIRTABLE_TOKEN = "patdDjF8LQNiHPbIv.ea6b727c91d93fd979616f6a36918f928b1ff1ae8b6d635639e16e0358aa4d56";   // Personal Access Token
-const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";     
+const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";    
 const TABLE_NAME     = "QRCodes";
 
 (async function () {
@@ -39,18 +39,17 @@ const TABLE_NAME     = "QRCodes";
 
     let html = `<h2>${escapeHtml(f.Name || "Shared info")}</h2>`;
 
-    html += section("1. Technical Specifications", f["Technical Specifications"]);
-    html += refresherSection("2. Quick Refresher", f["Quick Refresher"]);
-    html += section("3. Safety Aspects", f["Safety Aspects"]);
-    html += section("4. Operation Aspect", f["Operation Aspect"]);
-    html += section("5. Rescue Aspect", f["Rescue Aspect"]);
+    html += section("Technical Specifications", f["Technical Specifications"]);
+    html += refresherSection("Quick Refresher", f["Quick Refresher"]);
+    html += section("Safety Aspects", f["Safety Aspects"]);
+    html += section("Operation Aspect", f["Operation Aspect"]);
+    html += section("Rescue Aspect", f["Rescue Aspect"]);
 
     if (ppt || pdf) {
       html += `<h3 class="sec-title">Resources</h3><div class="file-grid">`;
       if (ppt) html += fileCard("ppt", "View PPT", "Presentation slides", ppt, "📊");
       if (pdf) html += fileCard("pdf", "View PDF / SOP", "Document & procedures", pdf, "📄");
       html += `</div>`;
-      if (pdf) html += `<iframe class="preview" src="${pdf.url}" title="PDF preview"></iframe>`;
     }
 
     card.innerHTML = html;
