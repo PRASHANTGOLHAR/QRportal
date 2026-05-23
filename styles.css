@@ -153,3 +153,112 @@ button.ghost {
 .file-row a.dl  { background: #374151; }
 .preview { width: 100%; height: 70vh; border: 1px solid #ddd; border-radius: 8px; margin-top: 16px; }
 .muted { color: #6b7280; font-size: 14px; }
+
+/* form additions */
+textarea {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+  font-family: inherit;
+  resize: vertical;
+}
+fieldset.group {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+fieldset.group legend { font-size: 14px; font-weight: 600; padding: 0 6px; }
+.refresher-row { display: flex; gap: 8px; }
+.refresher-row input { flex: 1; padding: 9px; border: 1px solid #d1d5db; border-radius: 8px; background: #fafafa; font-size: 14px; }
+.refresher-row .remove-refresher { padding: 4px 10px; font-size: 16px; line-height: 1; }
+#add-refresher { justify-self: start; padding: 6px 12px; font-size: 13px; }
+
+/* view page sections */
+.sec-title { margin: 18px 0 6px; font-size: 16px; color: #4338ca; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+.sec-body { margin: 0; line-height: 1.5; }
+.sec-list { margin: 0; padding-left: 20px; line-height: 1.6; }
+
+/* File grid — PPT & PDF side-by-side cards */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .file-grid { grid-template-columns: 1fr; }
+}
+.file-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 18px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  overflow: hidden;
+}
+.file-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+}
+.file-card.ppt::before { background: linear-gradient(90deg, #ea580c, #f59e0b); }
+.file-card.pdf::before { background: linear-gradient(90deg, #dc2626, #f43f5e); }
+.file-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.08); }
+.file-icon {
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+.file-card.ppt .file-icon { background: linear-gradient(135deg, #ea580c, #f59e0b); }
+.file-card.pdf .file-icon { background: linear-gradient(135deg, #dc2626, #f43f5e); }
+.file-title { font-weight: 700; font-size: 15px; color: #111827; }
+.file-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.file-name {
+  font-size: 11px; color: #9ca3af;
+  margin-top: 6px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  width: 100%;
+  justify-content: center;
+}
+.file-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.file-card.ppt .file-btn.primary { background: #ea580c; color: #fff; }
+.file-card.ppt .file-btn.primary:hover { background: #c2410c; }
+.file-card.pdf .file-btn.primary { background: #dc2626; color: #fff; }
+.file-card.pdf .file-btn.primary:hover { background: #b91c1c; }
+.file-btn.ghost {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+.file-btn.ghost:hover { background: #e5e7eb; }

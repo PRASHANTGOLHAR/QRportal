@@ -10,7 +10,7 @@
 <body>
 <header class="topbar">
   <h1>QR Portal</h1>
-  <p>Create QR codes for your PDF & PPT files</p>
+  <p>Create QR codes for your equipment / SOP info</p>
 </header>
 
 <main class="container">
@@ -19,16 +19,46 @@
     <h2>Create a new QR</h2>
     <form id="create-form">
       <label>Title
-        <input type="text" id="title" required placeholder="e.g. Product Brochure" />
+        <input type="text" id="title" required placeholder="EX. Product Brochure" />
       </label>
-      <label>PDF file (optional)
-        <input type="file" id="pdf" accept="application/pdf" />
+
+      <label>Technical Specifications
+        <textarea id="tech-specs" rows="3" placeholder="Model, capacity, power, dimensions…"></textarea>
       </label>
+
+      <fieldset class="group">
+        <legend>Quick Refresher</legend>
+        <div id="refresher-list">
+          <div class="refresher-row">
+            <input type="text" class="refresher-input" placeholder="Point 1" />
+            <button type="button" class="ghost remove-refresher" title="Remove">&times;</button>
+          </div>
+        </div>
+        <button type="button" id="add-refresher" class="ghost">+ Add point</button>
+      </fieldset>
+
+      <label>Safety Aspects
+        <textarea id="safety" rows="3" placeholder="PPE, hazards, lockout/tagout…"></textarea>
+      </label>
+
+      <label>Operation Aspect
+        <textarea id="operation" rows="3" placeholder="Start-up, run, shutdown steps…"></textarea>
+      </label>
+
+      <label>Rescue Aspect
+        <textarea id="rescue" rows="3" placeholder="Emergency stop, evacuation, first aid…"></textarea>
+      </label>
+
       <label>PPT file (optional)
         <input type="file" id="ppt" accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" />
       </label>
+
+      <label>PDF / SOP file (optional)
+        <input type="file" id="pdf" accept="application/pdf" />
+      </label>
+
       <button type="submit" id="submit-btn">Create QR</button>
-      <p class="hint">Attach at least one file. Max 2 GB per file.</p>
+      <p class="hint">Max 2 GB per file.</p>
       <p id="form-status" class="status"></p>
     </form>
   </section>
