@@ -1,6 +1,6 @@
 /* ====== CONFIG: fill these in ====== */
 const AIRTABLE_TOKEN = "patdDjF8LQNiHPbIv.ea6b727c91d93fd979616f6a36918f928b1ff1ae8b6d635639e16e0358aa4d56";   // Personal Access Token
-const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";           // e.g. appXXXXXXXXXXXXXX
+const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";      // e.g. appXXXXXXXXXXXXXX
 const TABLE_NAME     = "QRCodes";
 
 /* Public URL where you host these files. MUST be http(s) and reachable
@@ -78,7 +78,61 @@ document.getElementById("refresher-list").addEventListener("click", (e) => {
   }
 });
 
-/* ---- create flow ---- */
+/* ---- create / edit flow ---- */
+let editingId = null;
+
+function setEditMode(on) {
+  document.getElementById("form-heading").textContent = on ? "Edit QR information" : "Create a new QR";
+  document.getElementById("submit-btn").textContent = on ? "Update QR" : "Create QR";
+  document.getElementById("cancel-edit").classList.toggle("hidden", !on);
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("create-form").reset();
+  const list = document.getElementById("refresher-list");
+  list.innerHTML = "";
+  addRefresherRow();
+  setEditMode(false);
+  document.getElementById("form-status").textContent = "";
+}
+
+document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+async function startEdit(id) {
+  const status = document.getElementById("form-status");
+  try {
+    status.textContent = "Loading record…"; status.className = "status";
+    const res = await fetch(`${API}/${encodeURIComponent(id)}`, { headers: HEADERS });
+    if (!res.ok) throw new Error(await res.text());
+    const rec = await res.json();
+    const f = rec.fields || {};
+
+    editingId = id;
+    document.getElementById("title").value = f.Name || "";
+    document.getElementById("tech-specs").value = f["Technical Specifications"] || "";
+    document.getElementById("safety").value = f["Safety Aspects"] || "";
+    document.getElementById("operation").value = f["Operation Aspect"] || "";
+    document.getElementById("rescue").value = f["Rescue Aspect"] || "";
+    document.getElementById("qr-password").value = f.Password || "";
+    document.getElementById("ppt").value = "";
+    document.getElementById("pdf").value = "";
+
+    const list = document.getElementById("refresher-list");
+    list.innerHTML = "";
+    const points = String(f["Quick Refresher"] || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    if (points.length) points.forEach(p => addRefresherRow(p));
+    else addRefresherRow();
+
+    setEditMode(true);
+    status.textContent = "Editing — make changes and click Update QR.";
+    document.getElementById("create-form").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    status.textContent = "Could not load record: " + err.message; status.className = "status err";
+  }
+}
+window.startEdit = startEdit;
+
 document.getElementById("create-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const status = document.getElementById("form-status");
@@ -90,41 +144,69 @@ document.getElementById("create-form").addEventListener("submit", async (e) => {
   const safety = document.getElementById("safety").value.trim();
   const operation = document.getElementById("operation").value.trim();
   const rescue = document.getElementById("rescue").value.trim();
+  const password = document.getElementById("qr-password").value.trim();
   const pdf = document.getElementById("pdf").files[0];
   const ppt = document.getElementById("ppt").files[0];
 
-  if ((pdf && pdf.size > 2 * 1024 * 1024 * 1024) || (ppt && ppt.size > 2 * 1024 * 1024 * 1024)) {
+  const MAX_FILE = 2 * 1024 * 1024 * 1024; // 2 GB
+  if ((pdf && pdf.size > MAX_FILE) || (ppt && ppt.size > MAX_FILE)) {
     status.textContent = "Each file must be 2 GB or less."; status.className = "status err"; return;
   }
 
   btn.disabled = true;
-  status.textContent = "Creating record…"; status.className = "status";
+  const isEdit = !!editingId;
+  status.textContent = isEdit ? "Updating record…" : "Creating record…"; status.className = "status";
 
   try {
-    const fields = { Name: title };
-    if (techSpecs) fields["Technical Specifications"] = techSpecs;
-    if (refresher) fields["Quick Refresher"] = refresher;
-    if (safety) fields["Safety Aspects"] = safety;
-    if (operation) fields["Operation Aspect"] = operation;
-    if (rescue) fields["Rescue Aspect"] = rescue;
+    let recordId;
 
-    const createRes = await fetch(API, {
-      method: "POST",
-      headers: { ...HEADERS, "Content-Type": "application/json" },
-      body: JSON.stringify({ fields }),
-    });
-    if (!createRes.ok) throw new Error(await createRes.text());
-    const record = await createRes.json();
+    if (isEdit) {
+      const fields = {
+        Name: title,
+        "Technical Specifications": techSpecs,
+        "Quick Refresher": refresher,
+        "Safety Aspects": safety,
+        "Operation Aspect": operation,
+        "Rescue Aspect": rescue,
+        Password: password,
+      };
+      // If a new file is chosen, clear the old attachment so the upload replaces it
+      if (ppt) fields["PPT"] = [];
+      if (pdf) fields["PDF"] = [];
 
-    if (ppt) { status.textContent = "Uploading PPT…"; await uploadAttachment(record.id, "PPT", ppt); }
-    if (pdf) { status.textContent = "Uploading PDF…"; await uploadAttachment(record.id, "PDF", pdf); }
+      const updateRes = await fetch(`${API}/${encodeURIComponent(editingId)}`, {
+        method: "PATCH",
+        headers: { ...HEADERS, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields }),
+      });
+      if (!updateRes.ok) throw new Error(await updateRes.text());
+      recordId = editingId;
+    } else {
+      const fields = { Name: title };
+      if (techSpecs) fields["Technical Specifications"] = techSpecs;
+      if (refresher) fields["Quick Refresher"] = refresher;
+      if (safety) fields["Safety Aspects"] = safety;
+      if (operation) fields["Operation Aspect"] = operation;
+      if (rescue) fields["Rescue Aspect"] = rescue;
+      if (password) fields["Password"] = password;
 
-    status.textContent = "Created!"; status.className = "status ok";
-    e.target.reset();
-    // reset refresher to one empty row
-    const list = document.getElementById("refresher-list");
-    list.innerHTML = "";
-    addRefresherRow();
+      const createRes = await fetch(API, {
+        method: "POST",
+        headers: { ...HEADERS, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields }),
+      });
+      if (!createRes.ok) throw new Error(await createRes.text());
+      const record = await createRes.json();
+      recordId = record.id;
+    }
+
+    if (ppt) { status.textContent = "Uploading PPT…"; await uploadAttachment(recordId, "PPT", ppt); }
+    if (pdf) { status.textContent = "Uploading PDF…"; await uploadAttachment(recordId, "PDF", pdf); }
+
+    status.textContent = isEdit ? "Updated!" : "Created!"; status.className = "status ok";
+    resetForm();
+    document.getElementById("form-status").textContent = isEdit ? "Updated!" : "Created!";
+    document.getElementById("form-status").className = "status ok";
     loadList();
   } catch (err) {
     console.error(err);
@@ -149,6 +231,7 @@ async function loadList() {
       const has = [];
       if (f.PPT?.length) has.push("PPT");
       if (f.PDF?.length) has.push("PDF/SOP");
+      if (f.Password) has.push("🔒 Protected");
       const div = document.createElement("div");
       div.className = "list-item";
       const safeTitle = (f.Name || "").replace(/"/g, "&quot;");
@@ -160,6 +243,7 @@ async function loadList() {
         </div>
         <div class="item-actions">
           <button data-id="${rec.id}" data-title="${safeTitle}" class="view-qr-btn">View QR</button>
+          <button class="edit-btn" onclick="startEdit('${rec.id}')">Edit</button>
           <button data-id="${rec.id}" data-title="${safeTitle}" class="delete-btn" onclick="deleteQR('${rec.id}', '${safeTitle}')">Delete</button>
         </div>
       `;

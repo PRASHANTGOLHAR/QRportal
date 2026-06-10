@@ -16,10 +16,10 @@
 <main class="container">
   <div id="env-warning" class="status err hidden"></div>
   <section class="card">
-    <h2>Create a new QR</h2>
+    <h2 id="form-heading">Create a new QR</h2>
     <form id="create-form">
       <label>Title
-        <input type="text" id="title" required placeholder="EX. Product Brochure" />
+        <input type="text" id="title" required placeholder="e.g. Hydraulic Press - Unit A" />
       </label>
 
       <label>Technical Specifications
@@ -57,8 +57,16 @@
         <input type="file" id="pdf" accept="application/pdf" />
       </label>
 
-      <button type="submit" id="submit-btn">Create QR</button>
-      <p class="hint">Max 2 GB per file.</p>
+      <label>Password (optional)
+        <input type="text" id="qr-password" placeholder="Leave empty for no password" autocomplete="off" />
+        <span class="hint">If set, anyone scanning the QR must enter this password to view the info.</span>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" id="submit-btn">Create QR</button>
+        <button type="button" id="cancel-edit" class="ghost hidden">Cancel edit</button>
+      </div>
+      <p class="hint">Max 2 GB per file. When editing, choose a file only if you want to replace the existing one.</p>
       <p id="form-status" class="status"></p>
     </form>
   </section>

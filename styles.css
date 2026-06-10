@@ -262,3 +262,36 @@ fieldset.group legend { font-size: 14px; font-weight: 600; padding: 0 6px; }
   border: 1px solid #e5e7eb;
 }
 .file-btn.ghost:hover { background: #e5e7eb; }
+
+/* Edit button + form actions */
+.edit-btn { background: #0891b2; color: #fff; }
+.edit-btn:hover { background: #0e7490; }
+.form-actions { display: flex; gap: 10px; }
+input[type=password] {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+}
+
+/* Password gate (view page) */
+.pw-gate {
+  text-align: center;
+  padding: 30px 10px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.pw-gate .pw-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eef2ff, #ede9fe);
+  border: 1px solid #e0e7ff;
+}
+.pw-gate h2 { margin: 0 0 6px; }
+.pw-gate form { display: flex; gap: 8px; margin-top: 18px; }
+.pw-gate input { flex: 1; }
+.pw-gate button { white-space: nowrap; }

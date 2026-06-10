@@ -1,6 +1,6 @@
 /* same config as script.js — keep token + base in sync */
 const AIRTABLE_TOKEN = "patdDjF8LQNiHPbIv.ea6b727c91d93fd979616f6a36918f928b1ff1ae8b6d635639e16e0358aa4d56";   // Personal Access Token
-const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N";    
+const AIRTABLE_BASE  = "appV4lbFKyi2wKI0N"; 
 const TABLE_NAME     = "QRCodes";
 
 (async function () {
@@ -34,6 +34,46 @@ const TABLE_NAME     = "QRCodes";
 
     const rec = await res.json();
     const f = rec.fields || {};
+
+    if (f.Password) {
+      showPasswordGate(f);
+    } else {
+      renderContent(f);
+    }
+  } catch (err) {
+    console.error(err);
+    card.innerHTML = `<p class="status err">${escapeHtml(err.message)}</p>`;
+  }
+
+  /* ---- password gate ---- */
+  function showPasswordGate(f) {
+    card.innerHTML = `
+      <div class="pw-gate">
+        <div class="pw-icon">🔒</div>
+        <h2>Protected content</h2>
+        <p class="muted">This information is password protected.<br>Enter the password to continue.</p>
+        <form id="pw-form">
+          <input type="password" id="pw-input" placeholder="Enter password" autocomplete="off" autofocus />
+          <button type="submit">Unlock</button>
+        </form>
+        <p id="pw-error" class="status err"></p>
+      </div>`;
+    document.getElementById("pw-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const entered = document.getElementById("pw-input").value;
+      if (entered === String(f.Password)) {
+        renderContent(f);
+      } else {
+        const errEl = document.getElementById("pw-error");
+        errEl.textContent = "Incorrect password. Please try again.";
+        document.getElementById("pw-input").value = "";
+        document.getElementById("pw-input").focus();
+      }
+    });
+  }
+
+  /* ---- content ---- */
+  function renderContent(f) {
     const pdf = Array.isArray(f.PDF) ? f.PDF[0] : null;
     const ppt = Array.isArray(f.PPT) ? f.PPT[0] : null;
 
@@ -53,9 +93,6 @@ const TABLE_NAME     = "QRCodes";
     }
 
     card.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    card.innerHTML = `<p class="status err">${escapeHtml(err.message)}</p>`;
   }
 
   function section(title, text) {
